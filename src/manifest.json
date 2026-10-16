@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "id": "reading-mode-plugin",
   "name": "מצב קריאה",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "קריאה בטורים נגללים כמו בוורד, ספרייה, מפרשים, סימניות וייצוא לוורד. מבוסס חלקית על תוסף \"שני טורים\".",
   "author": "שני טורים",
   "type": "webapp",
   "entrypoint": "index.html",
   "category": "Utilities",
   "stability": "beta",
-  "minAppVersion": "0.9.99",
+  "minAppVersion": "0.9.98",
   "sdkVersion": "1.x",
   "permissions": [
     "library.books.read",
@@ -29,8 +29,7 @@
     "ui.feedback",
     "plugin.storage.read",
     "plugin.storage.write",
-    "events.subscribe:theme.changed",
-    "search.field_actions"
+    "events.subscribe:theme.changed"
   ],
   "contributes": {
     "toolTab": {
@@ -57,17 +56,6 @@
           "label": "פתח במצב קריאה",
           "key": "ctrl+shift+k",
           "command": "word-reader-open"
-        }
-      ],
-      "searchFieldActions": [
-        {
-          "id": "reading-mode-find",
-          "title": "פתח במצב קריאה",
-          "icon": "book_open_24_regular",
-          "fields": [
-            "library",
-            "findRef"
-          ]
         }
       ]
     }
