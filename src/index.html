@@ -120,6 +120,9 @@ html[style*="color-scheme: dark"] .lrow{background:var(--surfaceContainer,var(--
 .prev .ibtn{width:100%;height:40px}
 @media (max-width:820px){.lv-side{display:none}.lgrid{--cols:1!important}}
 ::highlight(wrq){background:#ffe36e;color:#000}
+#sideL,#sideR{position:fixed;top:50%;transform:translateY(-50%);z-index:30;width:30px;height:72px;border:0;border-radius:10px;background:var(--surfaceContainerHighest,#8884);color:var(--onSurface,#000);opacity:.18;cursor:pointer;font-size:22px;line-height:72px;padding:0;transition:opacity .15s}
+#sideL{left:4px}#sideR{right:4px}#sideL:hover,#sideR:hover,#sideL:focus-visible,#sideR:focus-visible{opacity:.65}
+body:not(.reading) #sideL,body:not(.reading) #sideR,body.noside #sideL,body.noside #sideR{display:none}
 </style>
 </head>
 <body class="h">
@@ -160,6 +163,7 @@ html[style*="color-scheme: dark"] .lrow{background:var(--surfaceContainer,var(--
 <aside class="drawer" id="toc"><div class="dh"><span>תוכן עניינים</span><span class="sp"></span><button class="ibtn" data-close><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="db" id="tocBody"></div></aside>
 <aside class="drawer" id="xt"><div class="dh"><span>מפרשים · סימניות · חיפוש</span><span class="sp"></span><button class="ibtn" data-close><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="db" id="xtBody"></div></aside>
 <aside class="drawer" id="set"><div class="dh"><span>שמות קדושים</span><span class="sp"></span><button class="ibtn" data-close><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="db" id="setBody"></div></aside>
+<button id="sideR" title="העמוד הקודם" aria-label="העמוד הקודם">›</button><button id="sideL" title="העמוד הבא" aria-label="העמוד הבא">‹</button>
 <div class="toast" id="toast"></div>
 <script>
 'use strict';
@@ -182,11 +186,11 @@ function toast(t,ms=2600){const e=$('#toast');e.textContent=t;e.classList.add('o
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ---------- settings ---------- */
-const DEF={fs:25,lh:1.5,cols:2,lines:0,pageW:97,cgap:44,py:20,align:'justify',alast:'right',halign:'center',mode:'h',hideNikud:false,hideTeamim:false,hidePunct:false,holy:'all',holyDisp:'kinuy',alef:false,breakH1:false,pageNums:false,defReader:true};
+const DEF={fs:25,lh:1.5,cols:2,lines:0,pageW:97,cgap:44,py:20,align:'justify',alast:'right',halign:'center',mode:'h',hideNikud:false,hideTeamim:false,hidePunct:false,holy:'all',holyDisp:'kinuy',alef:false,breakH1:false,pageNums:false,defReader:true,sideBtns:true};
 let G={...DEF}, BS={}, curKey=null, scope='all';
 const eff=()=>({...G,...(curKey?BS[curKey]||{}:{})});
 let ST=eff();
-const PERSIST=['holy','holyDisp','alef','defReader','cols'];
+const PERSIST=['holy','holyDisp','alef','defReader','cols','sideBtns'];
 async function loadSettings(){const g=await sto.get('settings');if(g&&typeof g==='object')for(const k of PERSIST)if(k in g)G[k]=g[k]}
 const saveG=()=>sto.set('settings',Object.fromEntries(PERSIST.map(k=>[k,G[k]])));
 async function loadBook(key){BS[key]??=(await sto.get('bs:'+key))||{}}
@@ -880,10 +884,11 @@ function renderSet(){
   if(ST.holy!=='none')tg('אופן ההצגה','holyDisp',[['kinuy','כינוי (יקוק, אלקים…)'],['dash','מקפים (י-ה-ו-ה)']]);
   const d=h('<div class="sw2"><span>הסתרת "א-ל" גם ללא ניקוד</span><input type="checkbox"></div>');
   const a=d.querySelector('input');a.checked=!!ST.alef;a.onchange=()=>setOpt('alef',a.checked);
-  const CL=[['1.5.0',['פתיחת ספר מהספרייה, מהאיתור או מהחיפוש נכנסת ישר למצב קריאה (מתג בהגדרות)','סנכרון מיקום וכותרת עם כרטיסיית אוצריא, וגודל אות משותף','הדגשת מילות החיפוש בתוך הטקסט','כפתור חזרה לעיון הרגיל לספר הנוכחי','תמיכה בעדכוני תצוגה (גודל אות/ניקוד) מסרגל אוצריא']],['1.4.2',['הסרגל נשאר מלא גם בקריאה (וורד/פתוחים/אחרונים, מעלה, תצוגה)','כפתור "פתח בתוסף במצב קריאה" בשדות האיתור של אוצריא (גרסת 0.9.99+)','תיאור קצר מ-150 תווים']],['1.4.1',['תוכן עניינים בימין ליד הלשוניות, מפרשים בשמאל; החלוניות נפתחות מתחת לסרגלים','אודות: מבוסס חלקית על תוסף "שני טורים"','אבחון קורא ברירת מחדל: הצגת גרסת אוצריא בשגיאה']],['1.4.0',['סרגל קשיח אחד: בית, איתור, וורד/פתוחים/אחרונים, מפרשים, תוכן, הגדרות – תמיד מוצג','שורת לשוניות נמוכה מתחתיו, עם + מימין והפרדה ברורה בין לשוניות','לחיצה על ספר בספרייה פותחת אותו מיד במצב קריאה']],['1.3.1',['לשוניות: הפרדה ברורה בין לשוניות, והלשונית הפעילה מודגשת בצבע ראשי']],['1.3.0',['נפתח כברירת מחדל בספרייה ולא בספר הפתוח','וורד / פתוחים / אחרונים עברו לשורת הכלים של הספרייה (חלונית צפה) במקום עמודה צדדית']],['1.2.1',['בספרייה: כפתור בית (חזרה לראש הספרייה) וכפתור רמה אחת למעלה']],['1.2.0',['מפרשים, סימניות וחיפוש בספרייה בחלונית אחת','הוסרו כפתורי ספרייה/וורד מהסרגל (ספרייה ב-+, ייצוא בהגדרות ובכרטיס הספר)','תיקון קורא ברירת מחדל: בדיקת מצב אמיתי בכל פתיחה, הודעת שגיאה ברורה, ודרישת אוצריא 0.9.98+']],['1.1.0',['בחירת מספר טורים: 1 עד 5 (בהגדרות)','ייצוא לוורד דרך חלון "שמור בשם" של אוצריא (הרשאת fs.user_files.write)','הגדרת קורא ברירת המחדל מנסה שוב בלחיצה הראשונה אם נדחתה, ובודקת מצב קיים']],['1.0.2',['שמות קדושים מוסתרים כברירת מחדל (כינוי)','ברשימת "פתוחים" מופיעים רק ספרי טקסט אמיתיים מהספרייה – ללא תוספים','יומן שינויים']],['1.0.1',['כפתור + ללשונית חדשה (ספרייה)','תוכן העניינים עבר לצד ימין','סינון תוספים מרשימת הפתוחים']],['1.0.0',['גרסה ראשונה: קריאה בשני טורים נגללים לצד, ספרייה בסגנון אוצריא, פתוחים ואחרונים, ייצוא לוורד, הסתרת שמות קדושים']]];
+  const CL=[['1.5.0',['תיקון: הפעלת קורא ברירת המחדל בלחיצה (מחוות משתמש תקינה) והמתג משקף את המצב האמיתי באוצריא','כפתור "פתח במצב קריאה" בשדות האיתור והספרייה (נדרשת אוצריא 0.9.99)','כפתורי דפדוף חצי-שקופים בשני הצדדים','פתיחת ספר מהספרייה, מהאיתור או מהחיפוש נכנסת ישר למצב קריאה (מתג בהגדרות)','סנכרון מיקום וכותרת עם כרטיסיית אוצריא, וגודל אות משותף','הדגשת מילות החיפוש בתוך הטקסט','כפתור חזרה לעיון הרגיל לספר הנוכחי','תמיכה בעדכוני תצוגה (גודל אות/ניקוד) מסרגל אוצריא']],['1.4.2',['הסרגל נשאר מלא גם בקריאה (וורד/פתוחים/אחרונים, מעלה, תצוגה)','כפתור "פתח בתוסף במצב קריאה" בשדות האיתור של אוצריא (גרסת 0.9.99+)','תיאור קצר מ-150 תווים']],['1.4.1',['תוכן עניינים בימין ליד הלשוניות, מפרשים בשמאל; החלוניות נפתחות מתחת לסרגלים','אודות: מבוסס חלקית על תוסף "שני טורים"','אבחון קורא ברירת מחדל: הצגת גרסת אוצריא בשגיאה']],['1.4.0',['סרגל קשיח אחד: בית, איתור, וורד/פתוחים/אחרונים, מפרשים, תוכן, הגדרות – תמיד מוצג','שורת לשוניות נמוכה מתחתיו, עם + מימין והפרדה ברורה בין לשוניות','לחיצה על ספר בספרייה פותחת אותו מיד במצב קריאה']],['1.3.1',['לשוניות: הפרדה ברורה בין לשוניות, והלשונית הפעילה מודגשת בצבע ראשי']],['1.3.0',['נפתח כברירת מחדל בספרייה ולא בספר הפתוח','וורד / פתוחים / אחרונים עברו לשורת הכלים של הספרייה (חלונית צפה) במקום עמודה צדדית']],['1.2.1',['בספרייה: כפתור בית (חזרה לראש הספרייה) וכפתור רמה אחת למעלה']],['1.2.0',['מפרשים, סימניות וחיפוש בספרייה בחלונית אחת','הוסרו כפתורי ספרייה/וורד מהסרגל (ספרייה ב-+, ייצוא בהגדרות ובכרטיס הספר)','תיקון קורא ברירת מחדל: בדיקת מצב אמיתי בכל פתיחה, הודעת שגיאה ברורה, ודרישת אוצריא 0.9.98+']],['1.1.0',['בחירת מספר טורים: 1 עד 5 (בהגדרות)','ייצוא לוורד דרך חלון "שמור בשם" של אוצריא (הרשאת fs.user_files.write)','הגדרת קורא ברירת המחדל מנסה שוב בלחיצה הראשונה אם נדחתה, ובודקת מצב קיים']],['1.0.2',['שמות קדושים מוסתרים כברירת מחדל (כינוי)','ברשימת "פתוחים" מופיעים רק ספרי טקסט אמיתיים מהספרייה – ללא תוספים','יומן שינויים']],['1.0.1',['כפתור + ללשונית חדשה (ספרייה)','תוכן העניינים עבר לצד ימין','סינון תוספים מרשימת הפתוחים']],['1.0.0',['גרסה ראשונה: קריאה בשני טורים נגללים לצד, ספרייה בסגנון אוצריא, פתוחים ואחרונים, ייצוא לוורד, הסתרת שמות קדושים']]];
   const cl=h('<button class="ibtn sec" id="clb">יומן שינויים · גרסה '+CL[0][0]+'</button><div id="cll" hidden></div>');
   cl.querySelector('#cll').innerHTML=CL.map(([v,a])=>'<div style="margin:10px 0 2px;font-weight:700">גרסה '+v+'</div><ul style="margin:0;padding-inline-start:20px;color:var(--onSurfaceVariant)">'+a.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>').join('');
   cl.querySelector('#clb').onclick=()=>{const l=cl.querySelector('#cll');l.hidden=!l.hidden};
+  {const sb=h('<div class="sw2"><span>כפתורי דפדוף שקופים בצדדים</span><input type="checkbox"></div>').querySelector('input');sb.checked=!!G.sideBtns;sb.onchange=()=>{G.sideBtns=sb.checked;saveG()}}
   const d2=h('<div class="sw2"><span>קורא ברירת מחדל לכל ספר באוצריא</span><input type="checkbox"></div>');
   const dr=d2.querySelector('input');dr.checked=!!G.defReader;dr.onchange=async()=>{G.defReader=dr.checked;saveG();try{await call('reader.setDefaultTextReader',{enabled:dr.checked});toast(dr.checked?'ספרים ייפתחו מעכשיו במצב קריאה':'ספרים ייפתחו מעכשיו בעיון הרגיל')}catch(e){toast('לא ניתן לשנות: '+e.message,4000)}refreshDef()};
   if(EMB){const nv=h('<button class="ibtn sec">פתח ספר זה בעיון הרגיל של אוצריא</button>');nv.firstChild.onclick=()=>{const t=cur&&cur.ref||EMB;call('reader.openBook',{bookId:t.bookId,...(t.bookUid?{bookUid:t.bookUid}:{}),index:cur?cur.pos:(EMB.currentIndex||0),reader:'native'}).catch(e=>toast('לא ניתן: '+e.message,4000))}}
@@ -891,7 +896,7 @@ function renderSet(){
   const sd=h('<div class="lb"></div>');
   const ab=h('<div class="lb" style="line-height:1.8;margin-top:8px"><b>אודות · מצב קריאה</b> · גרסה '+CL[0][0]+'<br>מבוסס חלקית על תוסף "שני טורים"</div>');
   call('app.getInfo').then(i=>{if(i&&i.version)ab.insertAdjacentText('beforeend',' · אוצריא '+i.version)}).catch(()=>{});
-  const refreshDef=()=>call('reader.getDefaultTextReader',{}).then(x=>{sd.textContent=x&&x.enabled?(x.available?'קורא ברירת המחדל פעיל באוצריא':'נבחר, אך אינו זמין כרגע'):'קורא ברירת המחדל כבוי באוצריא'}).catch(()=>{sd.textContent='לא ניתן לבדוק מצב (נדרשת אוצריא 0.9.98 ומעלה)'});refreshDef();
+  const refreshDef=()=>call('reader.getDefaultTextReader',{}).then(x=>{dr.checked=!!(x&&x.enabled);sd.textContent=x&&x.enabled?(x.available?'קורא ברירת המחדל פעיל באוצריא':'נבחר, אך אינו זמין כרגע'):'קורא ברירת המחדל כבוי באוצריא'}).catch(()=>{sd.textContent='לא ניתן לבדוק מצב (נדרשת אוצריא 0.9.98 ומעלה)'});refreshDef();
 }
 
 /* ---------- export to Word ---------- */
@@ -935,6 +940,9 @@ h1,h2,h3,h4,h5,h6{direction:rtl;text-align:center;margin:8pt 0 4pt;font-family:"
   finally{curKey=saveKey;ST=eff();FSIG='';busy(false)}
 }
 
+/* ---------- side buttons ---------- */
+$('#sideL').onclick=()=>turn(1);$('#sideR').onclick=()=>turn(-1);
+setInterval(()=>{document.body.classList.toggle('reading',!!(cur&&cur.pages&&cur.pages.length)&&!$('#hello').classList.contains('on'));document.body.classList.toggle('noside',!G.sideBtns)},400);
 /* ---------- boot ---------- */
 let EMB=null,inited=false,PEND=null;
 const sameBook=ev=>!EMB||!ev||(ev.bookUid&&EMB.bookUid?ev.bookUid===EMB.bookUid:(ev.bookId==null||ev.bookId===EMB.bookId));
@@ -942,11 +950,10 @@ function applyDisplay(d){if(!d)return;if(Number.isFinite(d.fontSize)){G.fs=Math.
 function readerIndex(ev){const s=ev&&(ev.selection||ev);const d=s&&(s.sections&&s.sections[0]||s)||{};const i=d.sectionIndex??d.currentIndex??d.index??(ev&&(ev.currentIndex??ev.index));return Number.isSafeInteger(i)&&i>=0?i:undefined}
 async function trySetDef(loud){
   try{
-    let st=null;try{st=await call('reader.getDefaultTextReader',{})}catch(e){}
-    if(st&&st.enabled){await sto.set('defreader-set',1);return true}
+    if(!loud){let st=null;try{st=await call('reader.getDefaultTextReader',{})}catch(e){}if(st&&st.enabled){await sto.set('defreader-set',1);return true}throw new Error('gesture')}
     await call('reader.setDefaultTextReader',{enabled:true});await sto.set('defreader-set',1);
     toast('הקורא הוגדר כברירת מחדל לכל ספר (אפשר לשנות בהגדרות)',4500);return true;
-  }catch(e){if(loud){let v='';try{const i=await call('app.getInfo');v=i&&i.version?' (גרסה '+i.version+')':''}catch(_){}toast(/unknown method/i.test(e.message)?'אוצריא שלך'+v+' לא מכירה את reader.setDefaultTextReader – ייתכן שהיא קיימת רק בבנייה מענף dev':'לא ניתן להגדיר קורא ברירת מחדל: '+e.message,8000)}return false}
+  }catch(e){if(loud){let v='';try{const i=await call('app.getInfo');v=i&&i.version?' (גרסה '+i.version+')':''}catch(_){}if(e.message==='gesture')return false;toast(/unknown.?method/i.test(e.message)?'אוצריא שלך'+v+' לא מכירה את reader.setDefaultTextReader – ייתכן שהיא קיימת רק בבנייה מענף dev':'לא ניתן להגדיר קורא ברירת מחדל: '+e.message,8000)}return false}
 }
 async function init(boot){
   if(inited)return;inited=true;
@@ -964,7 +971,7 @@ async function init(boot){
     return;
   }
   if(G.defReader){
-    if(!(await trySetDef())){const once=()=>{removeEventListener('pointerdown',once,true);removeEventListener('keydown',once,true);trySetDef(true)};addEventListener('pointerdown',once,true);addEventListener('keydown',once,true)}
+    if(!(await trySetDef())){const once=ev=>{if(ev.type==='keydown'&&ev.key==='Escape')return;removeEventListener('click',once,true);removeEventListener('keydown',once,true);trySetDef(true)};addEventListener('click',once,true);addEventListener('keydown',once,true)}
   }
   if(!tabs.length)showLib();
 }
@@ -975,6 +982,7 @@ if(O){
   O.on('reader.textReaderNavigate',ev=>{if(!sameBook(ev))return;const i=readerIndex(ev);if('searchQuery' in (ev||{}))setQ(ev.searchQuery);if(i==null)return;if(!cur||!cur.secs){PEND=i;return}goSection(i,genId).then(()=>pump(cur,genId))});
   O.on('reader.textReaderCommand',ev=>{if(!ev||!sameBook(ev))return;if(ev.action==='advance')turn(ev.direction===-1?-1:1);else if(ev.action==='settings')openDrawer('set');else if(ev.action==='display')applyDisplay(ev.display)});
   O.on('search.fieldAction.invoked',async ev=>{
+    if(ev&&ev.sessionId)call('search.endFieldSession',{sessionId:ev.sessionId,submit:false}).catch(()=>{});
     try{await call('plugin.openSelf',{})}catch(e){}
     const t=String(ev&&ev.text||'').trim();if(!t){showLib();return}
     try{const r=await call('library.resolveRef',{ref:t,limit:1}),h=r&&r[0];if(h&&!h.isPdf&&(!h.type||h.type==='text')){openBook({bookId:h.bookId,bookUid:h.bookUid,title:h.title},h.index);return}}catch(e){}

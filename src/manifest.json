@@ -9,7 +9,7 @@
   "entrypoint": "index.html",
   "category": "Utilities",
   "stability": "beta",
-  "minAppVersion": "0.9.98",
+  "minAppVersion": "0.9.99",
   "sdkVersion": "1.x",
   "permissions": [
     "library.books.read",
@@ -29,7 +29,8 @@
     "ui.feedback",
     "plugin.storage.read",
     "plugin.storage.write",
-    "events.subscribe:theme.changed"
+    "events.subscribe:theme.changed",
+    "search.field_actions"
   ],
   "contributes": {
     "toolTab": {
@@ -56,6 +57,17 @@
           "label": "פתח במצב קריאה",
           "key": "ctrl+shift+k",
           "command": "word-reader-open"
+        }
+      ],
+      "searchFieldActions": [
+        {
+          "id": "reading-mode-find",
+          "title": "פתח במצב קריאה",
+          "icon": "book_open_24_regular",
+          "fields": [
+            "library",
+            "findRef"
+          ]
         }
       ]
     }

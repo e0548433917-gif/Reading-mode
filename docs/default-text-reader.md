@@ -10,3 +10,8 @@
 - `reader.setTextReaderFontSize`: בשינוי גודל אות במצב משובץ (טווח 14–60).
 - חזרה לעיון רגיל: `reader.openBook({..., reader:'native'})`.
 - חל רק על ספרי text; PDF/EPUB/DOCX נשארים בקורא המובנה.
+
+## למה 1.4.2 לא הפעיל את הקורא
+- אוצריא בודקת `navigator.userActivation.isActive`. ההפעלה רצה על `pointerdown`, שבמגע אינו נחשב מחוות משתמש, ולפני כן חיכתה ל-`getDefaultTextReader`. עכשיו: `click`/`keydown`, וקריאה ישירה ל-`setDefaultTextReader`.
+- המתג בהגדרות הציג "מופעל" לפי ברירת המחדל המקומית גם כשבאוצריא היה כבוי, כך שאי אפשר היה להפעיל. עכשיו הוא משקף את `getDefaultTextReader`.
+- כפתור שדה האיתור דורש `search.field_actions` + `contributes.startup.searchFieldActions` ו-`minAppVersion` 0.9.99; ב-1.4.2 שניהם חסרו.
